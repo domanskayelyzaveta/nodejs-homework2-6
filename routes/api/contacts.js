@@ -1,88 +1,43 @@
-const express = require("express");
-const {
-  contactsValidation,
-} = require("../../validations/contactsValidation.js");
+import express from "express";
+import ctrl from "../../controllers/contactControllers.js";
+import isEmptyBody from "../../middlewares/isEmptyBody.js";
+import isValidID from "../../middlewares/isValidId.js";
+import validateBody from "../../decorators/validateBody.js";
+import {
+  addSchema,
+  updateFavoriteSchema,
+  updateSchema,
+} from "../../models/contactsValidation.js";
 
-const contacts = require("../../models/contacts.js");
-const router = express.Router();
+const contactsRouter = express.Router();
 
-router.get("/", async (req, res, next) => {
-  try {
-    const result = await contacts.listContacts();
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+contactsRouter.get("/", ctrl.getAll);
 
-// router.get("/:contactId", async (req, res, next) => {
-//   const { contactId } = req.params;
-//   const result = await contacts.getContactById(contactId);
-//   res.json(result);
-// });
+contactsRouter.get("/:contactId", isValidID, ctrl.getById);
 
-router.get("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    if (!contactId) {
-      return res
-        .status(400)
-        .json({ message: "Missing contactId as parameter" });
-    }
-    const result = await contacts.getContactById(contactId);
-    if (!result) {
-      return res.status(404).json({ message: "Contact is not found" });
-    }
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+contactsRouter.post(
+  "/",
+  isEmptyBody,
+  validateBody(addSchema),
+  ctrl.createContact
+);
 
-router.post("/", async (req, res, next) => {
-  try {
-    const { error } = contactsValidation(req.body);
-    if (error) {
-      return res.status(400).json({
-        message: `Missing required ${error.details[0].context.label} field`,
-      });
-    }
-    const result = await contacts.addContact(req.body);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+contactsRouter.put(
+  "/:contactId",
+  isValidID,
+  isEmptyBody,
+  validateBody(updateSchema),
+  ctrl.updateContact
+);
 
-router.delete("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    if (!contactId) {
-      return res
-        .status(400)
-        .json({ message: "Missing contactId as parameter" });
-    }
-    const result = await contacts.removeContact(contactId);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+contactsRouter.delete("/:contactId", isValidID, ctrl.deleteContact);
 
-router.put("/:contactId", async (req, res, next) => {
-  try {
-    const { error } = contactsValidation(req.body);
-    if (error) {
-      return res.status(400).json({
-        message: `Missing ${error.details[0].context.label} fields`,
-      });
-    }
-    const { contactId } = req.params;
-    const result = await contacts.updateContact(contactId, req.body);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+contactsRouter.patch(
+  "/:contactId/favorites",
+  isValidID,
+  isEmptyBody,
+  validateBody(updateFavoriteSchema),
+  ctrl.addToFavorites
+);
 
-module.exports = router;
+export default contactsRouter;
