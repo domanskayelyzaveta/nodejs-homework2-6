@@ -1,15 +1,14 @@
 import wrapperAsync from "../decorators/controllerWrapper.js";
-import contacts from "../models/contacts.js";
-import { contactsValidation } from "../validations/contactsValidation.js";
+import Contact from "../models/contactsValidation.js";
 
 const getAll = wrapperAsync(async (req, res) => {
-  const result = await contacts.listContacts();
+  const result = await Contact.find();
   res.json(result);
 });
 
 const getById = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
-  const result = await contacts.getContactById(contactId);
+  const result = await Contact.findById(contactId);
   if (!result) {
     return res.status(404).json({ message: "Not found" });
   }
@@ -17,19 +16,19 @@ const getById = wrapperAsync(async (req, res) => {
 });
 
 const createContact = wrapperAsync(async (req, res) => {
-  const { error } = contactsValidation(req.body);
+  const { error } = create(req.body);
   if (error) {
     return res.status(400).json({
       message: `Missing required ${error.details[0].context.label} field`,
     });
   }
-  const result = await contacts.addContact(req.body);
+  const result = await Contact.addContact(req.body);
   res.json(result);
 });
 
 const deleteContact = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
-  const result = await contacts.removeContact(contactId);
+  const result = await Contact.findByIdAndDelete(contactId);
   if (result) {
     res.status(200).json({ message: "Contact deleted" });
   } else {
@@ -38,7 +37,10 @@ const deleteContact = wrapperAsync(async (req, res) => {
 });
 
 const updateContact = wrapperAsync(async (req, res) => {
-  const { error } = contactsValidation(req.body);
+  const { error } = findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+  });
   if (error) {
     return res.status(400).json({
       message: `Missing ${error.details[0].context.label} fields`,
@@ -48,17 +50,6 @@ const updateContact = wrapperAsync(async (req, res) => {
   const result = await contacts.updateContact(contactId, req.body);
   res.json(result);
 });
-
-// const updateStatusContact = wrapperAsync(async (req, res) => {
-//   const { contactId } = req.params;
-//   const { body } = req.body;
-//   const result = await contacts.updateContact(contactId, body);
-//   if (result) {
-//     res.status(200).json({ message: "Contact updated successfully" });
-//   } else {
-//     res.status(400).json({ message: "Update is failed" });
-//   }
-// });
 
 const addToFavorites = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
