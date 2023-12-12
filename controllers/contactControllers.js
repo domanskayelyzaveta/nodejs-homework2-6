@@ -16,14 +16,9 @@ const getById = wrapperAsync(async (req, res) => {
 });
 
 const createContact = wrapperAsync(async (req, res) => {
-  const { error } = create(req.body);
-  if (error) {
-    return res.status(400).json({
-      message: `Missing required ${error.details[0].context.label} field`,
-    });
-  }
-  const result = await Contact.addContact(req.body);
-  res.json(result);
+  const result = await Contact.create(req.body);
+
+  res.status(201).json(result);
 });
 
 const deleteContact = wrapperAsync(async (req, res) => {
