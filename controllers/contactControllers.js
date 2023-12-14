@@ -3,9 +3,12 @@ import Contact from "../models/contactsValidation.js";
 
 const getAll = wrapperAsync(async (req, res) => {
   const { _id: owner } = req.user;
-  const { page = 1, limit = 5 } = req.query;
+  const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, { skip, limit });
+  const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  });
   const total = await Contact.countDocuments({ owner });
   res.json({ result, total });
 });
@@ -31,17 +34,21 @@ const deleteContact = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
   const { _id: owner } = req.user;
   const result = await Contact.findOneAndDelete({ _id: contactId, owner });
-  if (result) {
-    res.status(200).json({ message: "Contact deleted" });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  if (!result) {
+    throw HttpError(404, "Not found");
   }
+  res.json({
+    message: "Contact deleted",
+  });
 });
 
 const updateContact = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
   const { _id: owner } = req.user;
-  const result = await Contact.findOneAndUpdate({ _id: id, owner }, req.body);
+  const result = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
+    req.body
+  );
   if (!result) {
     throw HttpError(404, `Contact with id=${contactId} not found`);
   }

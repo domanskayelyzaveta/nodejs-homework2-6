@@ -1,8 +1,13 @@
 import jwt from "jsonwebtoken";
 import HttpError from "../helpers/httpError.js";
+import dotenv from "dotenv";
 import User from "../models/User.js";
-const { JWT_SECRET } = process.env;
 import ctrlWrapper from "../decorators/controllerWrapper.js";
+
+dotenv.config();
+
+const { JWT_SECRET } = process.env;
+console.log(JWT_SECRET);
 
 const authenticate = async (req, res, next) => {
   const { authorization } = req.headers;
@@ -15,6 +20,7 @@ const authenticate = async (req, res, next) => {
   }
   try {
     const { id } = jwt.verify(token, JWT_SECRET);
+    console.log(JWT_SECRET);
     const user = await User.findById(id);
     if (!user || !user.token) {
       throw HttpError(401, "User not found");
@@ -24,7 +30,7 @@ const authenticate = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return next(HttpError(401, error.message));
+    throw HttpError(401, error.message);
   }
 };
 

@@ -6,6 +6,7 @@ import HttpError from "../helpers/httpError.js";
 import ctrlWrapper from "../decorators/controllerWrapper.js";
 
 dotenv.config();
+
 const { JWT_SECRET } = process.env;
 
 const signup = async (req, res) => {
