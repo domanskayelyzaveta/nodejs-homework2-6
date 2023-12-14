@@ -2,13 +2,21 @@ import wrapperAsync from "../decorators/controllerWrapper.js";
 import Contact from "../models/contactsValidation.js";
 
 const getAll = wrapperAsync(async (req, res) => {
-  const result = await Contact.find();
-  res.json(result);
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  });
+  const total = await Contact.countDocuments({ owner });
+  res.json({ result, total });
 });
 
 const getById = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
-  const result = await Contact.findById(contactId);
+  const { _id: owner } = req.user;
+  const result = await Contact.findOne({ _id: contactId, owner });
   if (!result) {
     return res.status(404).json({ message: "Not found" });
   }
@@ -16,38 +24,35 @@ const getById = wrapperAsync(async (req, res) => {
 });
 
 const createContact = wrapperAsync(async (req, res) => {
-  const { error } = create(req.body);
-  if (error) {
-    return res.status(400).json({
-      message: `Missing required ${error.details[0].context.label} field`,
-    });
-  }
-  const result = await Contact.addContact(req.body);
-  res.json(result);
+  const { _id: owner } = req.user;
+  const result = await Contact.create({ ...req.body, owner });
+
+  res.status(201).json(result);
 });
 
 const deleteContact = wrapperAsync(async (req, res) => {
   const { contactId } = req.params;
-  const result = await Contact.findByIdAndDelete(contactId);
-  if (result) {
-    res.status(200).json({ message: "Contact deleted" });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  const { _id: owner } = req.user;
+  const result = await Contact.findOneAndDelete({ _id: contactId, owner });
+  if (!result) {
+    throw HttpError(404, "Not found");
   }
+  res.json({
+    message: "Contact deleted",
+  });
 });
 
 const updateContact = wrapperAsync(async (req, res) => {
-  const { error } = findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (error) {
-    return res.status(400).json({
-      message: `Missing ${error.details[0].context.label} fields`,
-    });
-  }
   const { contactId } = req.params;
-  const result = await contacts.updateContact(contactId, req.body);
+  const { _id: owner } = req.user;
+  const result = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
+    req.body
+  );
+  if (!result) {
+    throw HttpError(404, `Contact with id=${contactId} not found`);
+  }
+
   res.json(result);
 });
 

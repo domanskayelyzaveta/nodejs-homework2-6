@@ -3,6 +3,7 @@ import ctrl from "../../controllers/contactControllers.js";
 import isEmptyBody from "../../middlewares/isEmptyBody.js";
 import isValidID from "../../middlewares/isValidId.js";
 import validateBody from "../../decorators/validateBody.js";
+import authenticate from "../../middlewares/authenticate.js";
 import {
   addSchema,
   updateFavoriteSchema,
@@ -10,6 +11,8 @@ import {
 } from "../../models/contactsValidation.js";
 
 const contactsRouter = express.Router();
+
+contactsRouter.use(authenticate); // коли всі маршрути приватні
 
 contactsRouter.get("/", ctrl.getAll);
 
