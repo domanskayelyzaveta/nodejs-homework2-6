@@ -6,7 +6,7 @@ import HttpError from "../helpers/httpError.js";
 import ctrlWrapper from "../decorators/controllerWrapper.js";
 import path from "path";
 import Jimp from "jimp";
-import fs from "fs";
+import fs from "fs/promises";
 
 dotenv.config();
 
@@ -82,7 +82,7 @@ const updateAvatar = async (req, res) => {
     avatarURL: avatar,
   });
   res.json({
-    avatarURL,
+    avatarURL: avatar,
   });
 };
 
