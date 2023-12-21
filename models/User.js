@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import Joi from "joi";
 import handleMongooseError from "../helpers/handleMongooseError.js";
 import addUpdateSetting from "../helpers/addUpdateSettings.js";
+import gravatar from "gravatar";
 
 const emailRegexp = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
 
@@ -22,12 +23,26 @@ const userSchema = new Schema(
       required: true,
       minlength: 6,
     },
+    avatarURL: {
+      type: String,
+    },
     token: {
       type: String,
     },
   },
   { versionKey: false, timestamps: true }
 );
+
+userSchema.pre("save", async function (next) {
+  if (!this.avatarURL) {
+    this.avatarURL = gravatar.url(this.email, {
+      s: "250",
+      r: "pg",
+      d: "identicon",
+    });
+  }
+  next();
+});
 
 userSchema.post("save", handleMongooseError);
 userSchema.pre("findOneAndUpdate", addUpdateSetting);

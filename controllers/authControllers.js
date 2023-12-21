@@ -4,10 +4,15 @@ import dotenv from "dotenv";
 import User from "../models/User.js";
 import HttpError from "../helpers/httpError.js";
 import ctrlWrapper from "../decorators/controllerWrapper.js";
+import path from "path";
+import Jimp from "jimp";
+import fs from "fs";
 
 dotenv.config();
 
 const { JWT_SECRET } = process.env;
+
+const avatarsPath = path.resolve("public", "avatars");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -64,9 +69,27 @@ const logout = async (req, res) => {
   res.json({ message: "Logout success" });
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: oldPath, filename } = req.file;
+
+  const avatarImage = await Jimp.read(oldPath);
+  await avatarImage.resize(250, 250).write(path.join(avatarsPath, filename));
+  await fs.unlink(oldPath);
+
+  const avatar = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, {
+    avatarURL: avatar,
+  });
+  res.json({
+    avatarURL,
+  });
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };

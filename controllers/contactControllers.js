@@ -1,5 +1,8 @@
 import wrapperAsync from "../decorators/controllerWrapper.js";
 import Contact from "../models/contactsValidation.js";
+import path from "path";
+
+const avatarsPath = path.resolve("public", "avatars");
 
 const getAll = wrapperAsync(async (req, res) => {
   const { _id: owner } = req.user;
@@ -25,7 +28,11 @@ const getById = wrapperAsync(async (req, res) => {
 
 const createContact = wrapperAsync(async (req, res) => {
   const { _id: owner } = req.user;
-  const result = await Contact.create({ ...req.body, owner });
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(avatarsPath, filename);
+  await fs.rename(oldPath, newPath);
+  const avatar = path.join("avatars", filename);
+  const result = await Contact.create({ ...req.body, avatar, owner });
 
   res.status(201).json(result);
 });

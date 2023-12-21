@@ -4,6 +4,7 @@ import isEmptyBody from "../../middlewares/isEmptyBody.js";
 import isValidID from "../../middlewares/isValidId.js";
 import validateBody from "../../decorators/validateBody.js";
 import authenticate from "../../middlewares/authenticate.js";
+import upload from "../../middlewares/upload.js";
 import {
   addSchema,
   updateFavoriteSchema,
@@ -20,6 +21,8 @@ contactsRouter.get("/:contactId", isValidID, ctrl.getById);
 
 contactsRouter.post(
   "/",
+  // upload.fields([{name: "poster", maxCount: 1}]) якщо декілька файлів в полі,
+  upload.single("avatar"),
   isEmptyBody,
   validateBody(addSchema),
   ctrl.createContact
