@@ -28,8 +28,8 @@ authRouter.post("/logout", authenticate, authControllers.logout);
 
 authRouter.patch(
   "/avatars",
-  upload.single("avatar"),
   authenticate,
+  upload.single("avatar"),
   authControllers.updateAvatar
 );
 
