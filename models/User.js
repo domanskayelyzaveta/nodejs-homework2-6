@@ -33,7 +33,7 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    verification: {
+    verificationToken: {
       type: String,
       default: "",
     },
