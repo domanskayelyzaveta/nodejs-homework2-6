@@ -8,7 +8,6 @@ import authRouter from "./routes/auth-router.js";
 const app = express();
 
 dotenv.config();
-
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));
