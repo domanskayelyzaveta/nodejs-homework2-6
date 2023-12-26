@@ -35,7 +35,9 @@ const signup = async (req, res) => {
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a tagret="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click verify</a>`,
+    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #007bff; text-decoration: none; border-radius: 5px;>Click to verify</a>
+    <h1>Please verify your email</h1>
+    <p>For more detailed information, you can contact us...</p>`,
   };
 
   await sendEmail(verifyEmail);
@@ -72,13 +74,13 @@ const resendVerifyEmail = async (req, res) => {
     throw HttpError(401, "Email not found");
   }
   if (user.verify) {
-    throw HttpError(401, "Email already verify");
+    throw HttpError(401, "Email already verified");
   }
 
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a tagret="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click verify</a>`,
+    html: `<a tagret="_blank" href="${BASE_URL}/api/auth/verify/${user.verificationToken}">Click to verify</a>`,
   };
 
   await sendEmail(verifyEmail);
